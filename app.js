@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyPaser = require('body-parser');
-
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
 
 let db; // 디비 접속할때 변수가 하나필요하다.
@@ -34,23 +35,21 @@ MongoClient.connect('mongodb+srv://root:qwer1234@cluster0.qpoom.mongodb.net/myFi
 
 app.use(bodyPaser.urlencoded({extended : true}));
 
-app.get('/a', function(req,res){
-    res.send('apple');
-});
-
 app.get('/', function(req,res){
-    res.sendFile(__dirname + '/index.html');
+    // res.sendFile(__dirname + '/index.html');
+    res.render('index.ejs');
 });
 
 app.get('/write', function(req,res){
-    res.sendFile(__dirname + '/write.html');
+    // res.sendFile(__dirname + '/write.html');
+    res.render('write.ejs');
 });
 
 // 어떤 사람이 /write 경로로 POST 요청을 하면....
 // ??를 해주세요
 
 app.post('/write', function(req,res){ //누가 폼에서 /write로 POST 요청하면
-    res.send('전송완료');
+    res.redirect('/list');
     console.log(req.body.title);
     console.log(req.body.date);
     // db에 저장해주세요
@@ -86,11 +85,22 @@ app.get('/list', function(req,res){
     
 });
 
-// // counter라는 콜랙션에 있는 totalPost 라는 항복도 1 증가 시켜야함
-// app.put('/update', (req,res) =>{
-//     console.log('업데이트 성공');
-//     console.log(res.body);
-// });
+// counter라는 콜랙션에 있는 totalPost 라는 항복도 1 증가 시켜야함
+
+app.get('edit',(req,res) => {
+    res.render('edit.ejs')
+})
+
+app.put('/edit', function(req,res){
+    //폼에 담긴 데이터를 가지고 db.collection 에 update
+    // db.collection('post').updateOne({어떤 게시물 수정 할것인지},{수정값},function(err,result){})
+    
+    db.collection('post').updateOne({_id: parseInt(req.body.id)}, {$set : {제목: req.body.title, 날짜: req.body.date}}, function(err,result){
+        console.log(result);
+        console.log('수정완료');
+        res.redirect('/list');
+    })
+});
 
 app.delete('/delete', function(req,res) {
     console.log(req.body);
@@ -101,5 +111,19 @@ app.delete('/delete', function(req,res) {
         console.log('삭제 성공');
         res.status(200).send({ message : '성공했습니다.'});
     })
-    res.send('삭제 완료');
+})
+
+//detail 로 접속하면 detail.ejs 보여줌 :parameter 이런게 가능
+app.get('/detail/:id', function(req,res){
+    db.collection('post').findOne({_id: parseInt(req.params.id)},function(err,result){
+        console.log(result);
+        res.render('detail.ejs', { data : result})
+    })
+})
+
+app.get('/edit/:id', function(req,res){
+    db.collection('post').findOne({_id: parseInt(req.params.id)},function(err,result){
+        console.log(result);
+        res.render('edit.ejs', { post : result});
+    })
 })

@@ -15,7 +15,7 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Tode App</a>
+        <a class="navbar-brand" href="#">Todo App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -35,40 +35,12 @@
         </div>
     </nav>
 
-    <!-- 서버에서 가져온 리스트 반복 -->
-    <ul class="list-group">
-        <% for (let i=0; i < posts.length; i++){%>
-            <li class="list-group-item">
-                <p>글번호 : <%= posts[i]._id %></p>
-                <h4>할일 제목 : <%= posts[i].제목 %>
-                </h4>
-                <h4>할일 마감날짜 : <%= posts[i].날짜 %>
-                </h4>
-                <button class="delete" data-id="<%= posts[i]._id %>">삭제</button><button class="update" data-id="<%= posts[i]._id %>">수정</button>
-            </li>
-            <% } %>
-    </ul>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
-    
-    <script>
-        $('.delete').click(function(e){
-            var 글번호 = e.target.dataset.id;
-            var 지금누른버튼 = $(this);
-            $.ajax({
-                type : 'DELETE',
-                url : '/delete',
-                data : { _id : 글번호 }
-            }).done(function(result){
-                console.log('삭제 성공');
-                지금누른버튼.parent('li').fadeOut();
-            }).fail(function(xhr, textStatus, errorThrown){
-                console.log(xhr, textStatus, errorThrown);
-                
-            });
-        });
-       
-    </script>
+    <h4>상세페이지</h4>
+    <h4>제목: <%= data.제목 %> </h4>
+    <h4>날짜: <%= data.날짜 %></h4>
 
+
+    
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->

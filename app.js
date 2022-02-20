@@ -26,7 +26,7 @@ MongoClient.connect('mongodb+srv://root:qwer1234@cluster0.qpoom.mongodb.net/myFi
     
 
     //내부 코드를 실행
-    app.listen(8000, function(){ //nodejs 서버띄우는 코드
+    app.listen(3000, function(){ //nodejs 서버띄우는 코드
         console.log('서버 시작');
     });
 });
@@ -70,20 +70,6 @@ app.post('/write', function(req,res){ //누가 폼에서 /write로 POST 요청�
 });
 // 총게시물갯수 +1 = auto increment
 
-
-
-// counter라는 콜랙션에 있는 totalPost 라는 항복도 1 증가 시켜야함
-app.put('/update', (req,res) =>{
-    console.log('업데이트 성공');
-    console.log(res.body);
-});
-
-app.delete('/deldete', (req,res)=>{
-    console.log('삭제 성공');
-    console.log(res.body);
-});
-
-
 // /list 로 get요청으로 접속하면
 // 실제 DB에 저장된 데이터들로 예쁘게 꾸며진 HTML을 보여줌
 
@@ -99,3 +85,21 @@ app.get('/list', function(req,res){
     //2.찾은걸 ejs파일에 집어넣어주세요
     
 });
+
+// // counter라는 콜랙션에 있는 totalPost 라는 항복도 1 증가 시켜야함
+// app.put('/update', (req,res) =>{
+//     console.log('업데이트 성공');
+//     console.log(res.body);
+// });
+
+app.delete('/delete', function(req,res) {
+    console.log(req.body);
+    req.body._id = parseInt(req.body._id)
+    // req.body에 담겨온 게시물번호를 가진 글을 db에서 찾아서 삭제해주세요.
+    //db.collection('post').deleteOne({'어떤걸 삭제할지'},function(){ //삭제하고 뭘할지    })
+    db.collection('post').deleteOne(req.body ,function(err,result){
+        console.log('삭제 성공');
+        res.status(200).send({ message : '성공했습니다.'});
+    })
+    res.send('삭제 완료');
+})

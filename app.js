@@ -2,7 +2,16 @@ const express = require('express');
 const app = express();
 const bodyPaser = require('body-parser');
 const methodOverride = require('method-override');
+const passport = require('passport');
+const localStrategy = require('passport-local');
+const session = require('express-session');
+
+
 app.use(methodOverride('_method'));
+app.use(session({secret : 'secret', resave : true, saveUninitialized: false}));
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.set('view engine', 'ejs');
 
 let db; // 디비 접속할때 변수가 하나필요하다.
@@ -127,3 +136,39 @@ app.get('/edit/:id', function(req,res){
         res.render('edit.ejs', { post : result});
     })
 })
+
+app.get('/login', function(req,res){
+    res.render('login.ejs');
+});
+
+// app.post('/login', 검사하세요, function(요청,응답){
+// });
+
+app.post('/login', passport.Authenticator('local',{
+    failureRedirect : '/fail'
+}),function(req,res){
+   res.redirect('/') 
+});
+
+//인증 방식
+passport.use(new localStrategy({
+    usernameField: 'id', // <input type="text" name="id"> name속성값
+    passwordField: 'password', // <input type="text" name="password">
+    session : true,
+    passReqToCallback: false,
+}), function(입력한아이디, 입력한비밀번호, done){
+    console.log(입력한아이디, 입력한비밀번호);
+    db.collection('login').findOne({id : 입력한아이디}, function(err,result){
+        if(err) return done(err);
+        if(!result) return done(null,false,{message : '존재하지않는 아이디'})
+        if(입력한비밀번호 == result.pw){
+            return done(null, result)
+        } else {
+            return done(null, false, {message : '비밀번호가 틀립니다.'})
+        }
+    })
+});
+
+app.get('/fail', function(req,res){
+    res.render('fail.ejs');
+});

@@ -144,31 +144,41 @@ app.get('/login', function(req,res){
 // app.post('/login', 검사하세요, function(요청,응답){
 // });
 
-app.post('/login', passport.Authenticator('local',{
+app.post('/login', passport.authenticate('local',{
     failureRedirect : '/fail'
 }),function(req,res){
-   res.redirect('/') 
+   res.redirect('/login') 
 });
 
 //인증 방식
+
 passport.use(new localStrategy({
     usernameField: 'id', // <input type="text" name="id"> name속성값
-    passwordField: 'password', // <input type="text" name="password">
-    session : true,
-    passReqToCallback: false,
-}), function(입력한아이디, 입력한비밀번호, done){
+    passwordField: 'pw', // <input type="text" name="pw">
+    session : true, //세션을 만들건지 유무
+    passReqToCallback: false, //아이디/비밀번호를 제외하고 다른 정보 검사가 필요한지
+}, function(입력한아이디, 입력한비밀번호, done){
     console.log(입력한아이디, 입력한비밀번호);
     db.collection('login').findOne({id : 입력한아이디}, function(err,result){
         if(err) return done(err);
-        if(!result) return done(null,false,{message : '존재하지않는 아이디'})
+        if(!result) return done(null,false,{message : '존재하지않는 아이디'}) // 서버에러 , 성공시사용자 데이터, 에러메세지 넣는곳
         if(입력한비밀번호 == result.pw){
             return done(null, result)
         } else {
             return done(null, false, {message : '비밀번호가 틀립니다.'})
         }
     })
+}));
+
+// 세션만들기 // 위에있는 result값이 user에 들어간다.
+passport.serializeUser(function(user, done){ //id를 이용해서 세션을 저장시키는 코드(로그인 성공시 발동)
+    done(null, user.id)
+});
+passport.deserializeUser(function(아이디, done){ //세션 데이터를 가진 사람을 DB에서 찾아주세요.(마이페이지 접속시 발동)
+    done(null,{})
 });
 
 app.get('/fail', function(req,res){
     res.render('fail.ejs');
 });
+

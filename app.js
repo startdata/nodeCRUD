@@ -5,7 +5,7 @@ const methodOverride = require('method-override');
 const passport = require('passport');
 const localStrategy = require('passport-local');
 const session = require('express-session');
-
+require('dotenv').config()
 
 app.use(methodOverride('_method'));
 app.use(session({secret : 'secret', resave : true, saveUninitialized: false}));
@@ -16,8 +16,10 @@ app.set('view engine', 'ejs');
 
 let db; // 디비 접속할때 변수가 하나필요하다.
 
+//MongoClient.connect('mongodb+srv://:~~~~~~',
+
 const MongoClient = require('mongodb').MongoClient;
-MongoClient.connect('mongodb+srv://root:qwer1234@cluster0.qpoom.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+MongoClient.connect(process.env.DB_URL,
  function(err,client){ // database 접속이 완료되면
     if(err) {
         return console.log(err);
@@ -150,6 +152,20 @@ app.post('/login', passport.authenticate('local',{
    res.redirect('/login') 
 });
 
+app.get('/mypage',로그인했니, function(req,res){
+    console.log(req.user);
+    res.render('mypage.ejs', {사용자: req.user})
+})
+
+function 로그인했니(req,res,next){ //get 다음에 미들웨어 입력
+    if(req.user){
+        next()
+    } else {
+        res.send('로그인해주세요')
+    }
+}
+
+
 //인증 방식
 
 passport.use(new localStrategy({
@@ -174,9 +190,16 @@ passport.use(new localStrategy({
 passport.serializeUser(function(user, done){ //id를 이용해서 세션을 저장시키는 코드(로그인 성공시 발동)
     done(null, user.id)
 });
+// user.id 와 아이디는 같은값
 passport.deserializeUser(function(아이디, done){ //세션 데이터를 가진 사람을 DB에서 찾아주세요.(마이페이지 접속시 발동)
-    done(null,{})
+    //디비에서 user.id로 유저를 찾은 뒤에 유저 정보를
+    db.collection('login').findOne({id:아이디}, function(err, result){
+        done(null,result)
+    })
+    // done(null,{여기에 넣음})
 });
+
+// 요청.user 안에 유저의 정보가 다 들어가 있다.
 
 app.get('/fail', function(req,res){
     res.render('fail.ejs');

@@ -165,6 +165,15 @@ function 로그인했니(req,res,next){ //get 다음에 미들웨어 입력
     }
 }
 
+app.get('/search', (req,res)=> {
+    console.log(req.query.value);
+    db.collection('post').find({제목:req.query.value}).toArray((err, result) =>{
+        console.log(result)
+        res.render()
+    })
+});
+
+//req.query.value 100프로 일치한것만 찾아줌
 
 //인증 방식
 
